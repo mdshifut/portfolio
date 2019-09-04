@@ -1,0 +1,35 @@
+{
+  "name": "with-redux",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "next",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --ext .js --ext .jsx ."
+  },
+  "dependencies": {
+    "next": "^9.0.5",
+    "prop-types": "^15.7.2",
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "react-redux": "^7.1.0",
+    "react-transition-group": "^4.2.2",
+    "redux": "^3.6.0",
+    "redux-devtools-extension": "^2.13.2"
+  },
+  "license": "ISC",
+  "devDependencies": {
+    "@svgr/webpack": "^4.3.2",
+    "eslint": "6.1.0",
+    "eslint-config-airbnb": "18.0.1",
+    "eslint-config-prettier": "^6.1.0",
+    "eslint-plugin-import": "2.18.2",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-prettier": "^3.1.0",
+    "eslint-plugin-react": "7.14.3",
+    "eslint-plugin-react-hooks": "1.7.0",
+    "node-sass": "^4.12.0",
+    "prettier": "^1.18.2",
+    "styled-jsx-plugin-sass": "^1.0.0"
+  }
+}
