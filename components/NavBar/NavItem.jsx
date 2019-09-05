@@ -2,30 +2,35 @@ import Link from "next/link";
 import propTypes from "prop-types";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { animationTime } from "../styles/constants-style";
+import { animationTime } from "../../styles/constants-style";
 
-const MenuItem = ({ title, href, icon }) => {
-  const router = useRouter();
-  const { route, events } = router;
+const NavItem = ({ title, href, icon }) => {
+  const { route, events } = useRouter();
+
   const [classNames, setClassNames] = useState("scale-up");
-  const [prevRoute, setPrevRoute] = useState("");
 
-  const handleRouteChange = () => setPrevRoute(route);
-
-  useEffect(() => {
-    if (route === "/" && prevRoute !== href) {
-      setClassNames("scale-up");
+  const handleRouteChange = url => {
+    if (url === "/" && route !== href) {
+      setClassNames("scale-up hover-disabled");
     }
-    if (route !== "/" && route !== href) {
+    if (url !== "/" && url !== href) {
       setClassNames("scale-down");
     }
 
-    if (route === "/" && prevRoute === href) {
+    if (url === "/" && route === href) {
       setClassNames("fade-in hover-disabled");
     }
-    if (route !== "/" && route === href) {
+
+    if (url !== "/" && url === href && !!route) {
       setClassNames("fade-out");
     }
+
+    if (url !== "/" && route !== "/") {
+      setClassNames("hide");
+    }
+  };
+
+  useEffect(() => {
     events.on("routeChangeStart", handleRouteChange);
     return () => {
       events.off("routeChangeStart", handleRouteChange);
@@ -36,6 +41,9 @@ const MenuItem = ({ title, href, icon }) => {
   const mouseMoveHandler = () => {
     if (classNames === "fade-in hover-disabled") {
       setClassNames("fade-in");
+    }
+    if (classNames === "scale-up hover-disabled") {
+      setClassNames("scale-up");
     }
   };
 
@@ -62,23 +70,22 @@ const MenuItem = ({ title, href, icon }) => {
               position: relative;
               transition: box-shadow 0.3s;
 
-              &:hover {
-                z-index: 2;
-              }
-
+              z-index: 10;
               &.scale-down {
                 animation: scaleDown ${animationTime}ms;
                 border-radius: 0;
               }
 
+              &.scale-down:hover {
+                z-index: 2;
+              }
+
               &.scale-up {
                 animation: scaleUp ${animationTime}ms;
               }
-
-              &.fade-out {
-                animation: fadeOut 10000ms;
+              &:hover {
+                z-index: 24;
               }
-
               &.scale-up:nth-child(2) {
                 border-radius: 0 5px 0 0;
               }
@@ -98,9 +105,37 @@ const MenuItem = ({ title, href, icon }) => {
               &:nth-child(4):hover {
                 box-shadow: -10px -10px 15px #ddd;
               }
+              &.fade-out {
+                //TODO:Have change animation time
+                animation: fadeOut 4000ms;
+              }
+
+              &.fade-in {
+                //TODO:Have change animation time
+                animation: fadeIn 10000ms;
+              }
+
+              &.hide {
+                opacity: 0;
+                visibility: hidden;
+              }
+
+              &.fade-out:hover {
+                transition: box-shadow 0;
+                box-shadow: none !important;
+                z-index: 1;
+              }
+
+              &.fade-out &__content {
+                transform: scale(1.1);
+              }
 
               &.hover-disabled:hover {
                 box-shadow: none;
+              }
+
+              &.hover-disabled:hover &__content {
+                transform: scale(1);
               }
 
               &__content {
@@ -109,10 +144,6 @@ const MenuItem = ({ title, href, icon }) => {
 
               &:hover &__content {
                 transform: scale(1.1);
-              }
-
-              &.hover-disabled:hover &__content {
-                transform: scale(1);
               }
 
               &__icon {
@@ -135,9 +166,9 @@ const MenuItem = ({ title, href, icon }) => {
               0% {
                 z-index: 23;
                 opacity: 1;
-                box-shadow: none;
               }
-              15% {
+
+              30% {
                 z-index: 23;
                 opacity: 1;
               }
@@ -150,6 +181,25 @@ const MenuItem = ({ title, href, icon }) => {
               100% {
                 z-index: 1;
                 opacity: 0;
+              }
+            }
+
+            @keyframes fadeIn {
+              0% {
+                z-index: 23;
+                opacity: 0;
+                box-shadow: none;
+              }
+              30% {
+                z-index: 23;
+                opacity: 0;
+              }
+
+              100% {
+                z-index: 23;
+                opacity: 1;
+
+                box-shadow: none;
               }
             }
 
@@ -192,96 +242,10 @@ const MenuItem = ({ title, href, icon }) => {
   );
 };
 
-MenuItem.propTypes = {
+NavItem.propTypes = {
   title: propTypes.string.isRequired,
   href: propTypes.string.isRequired,
   icon: propTypes.string.isRequired
 };
 
-const NavBar = () => {
-  return (
-    <nav>
-      <MenuItem title="About Me" href="/about" icon="icon-user" />
-      <MenuItem title="My Resume" href="/resume" icon="icon-file-text2" />
-      <MenuItem title="My Work" href="/work" icon="icon-embed2" />
-      <MenuItem title="Contact Me" href="/contact" icon="icon-phone" />
-
-      <style jsx>
-        {`
-          nav {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            &::before,
-            &::after {
-              position: absolute;
-              content: "";
-              transition: 100ms;
-              z-index: 1;
-            }
-            &::before {
-              top: 0;
-              left: 50%;
-              height: 100%;
-              width: 1px;
-              background: #ddd;
-              transform: translateX(-50%);
-              background: -moz-linear-gradient(
-                top,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              background: -webkit-linear-gradient(
-                top,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              background: linear-gradient(
-                to bottom,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#001e5799', endColorstr='#007db9e8',GradientType=0 );
-            }
-            &::after {
-              top: 50%;
-              left: 0;
-              height: 1px;
-              width: 100%;
-              background: #ddd;
-              transform: translateY(-50%);
-              background: -moz-linear-gradient(
-                left,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              background: -webkit-linear-gradient(
-                left,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              background: linear-gradient(
-                to right,
-                rgba(30, 87, 153, 0) 0%,
-                rgba(221, 221, 221, 1) 50%,
-                rgba(125, 185, 232, 0) 100%
-              );
-              filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#001e5799', endColorstr='#007db9e8',GradientType=1 );
-            }
-          }
-        `}
-      </style>
-    </nav>
-  );
-};
-
-export default NavBar;
+export default NavItem;

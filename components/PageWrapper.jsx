@@ -1,6 +1,6 @@
+import { useRef, useEffect } from "react";
 import propTypes from "prop-types";
 import { useRouter } from "next/router";
-import { animationTime } from "../styles/constants-style";
 
 const getPosition = position => {
   switch (position) {
@@ -36,6 +36,18 @@ const getShadow = position => {
 
 const PageWrapper = ({ children, isServer, position }) => {
   const router = useRouter();
+  const pageWrapper = useRef(null);
+
+  useEffect(() => {
+    const classList =
+      pageWrapper && pageWrapper.current && pageWrapper.current.classList;
+
+    if (
+      classList.contains("page-zoom-exit-active") ||
+      classList.contains("page-scale-exit-active")
+    )
+      classList.remove("show");
+  });
 
   const BackBtnHandler = () => {
     if (isServer) {
@@ -46,7 +58,7 @@ const PageWrapper = ({ children, isServer, position }) => {
   };
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper show" ref={pageWrapper}>
       <div className="page-wrapper__inner">
         <span
           className="back-btn"
@@ -63,38 +75,54 @@ const PageWrapper = ({ children, isServer, position }) => {
         {`
           .page-wrapper {
             position: absolute;
+            background: #fff;
+            z-index: 3;
             height: 100%;
             width: 100%;
-            background: #fff;
-            z-index: 22;
             ${getPosition(position)}
 
-            &.page-enter {
-              animation: pageIn ${animationTime}ms;
+            &.show {
+              z-index: 30;
             }
 
-            &.page-exit {
-              animation: pageOut ${animationTime}ms;
+            &.page-zoom-enter {
+              animation: pageIn 10000ms;
+            }
+
+            &.page-zoom-exit {
+              animation: pageOut 10000ms;
+            }
+
+            &.page-scale-enter {
+              animation: scaleIn 10000ms;
+            }
+
+            &.page-scale-exit {
+              animation: scaleOut 10000ms;
             }
 
             &__inner {
               opacity: 1;
             }
 
-            &.page-enter &__inner {
+            &.page-zoom-enter &__inner {
               opacity: 0;
-              transition: opacity 400ms ease-in-out ${0.6 * animationTime}ms;
+              //TODO:Have to change animation time
+              transition: opacity 4000ms 6000ms;
             }
 
-            &.page-enter-active &__inner {
+            &.page-zoom-enter-active &__inner {
               opacity: 1;
             }
 
-            &.page-exit &__inner {
+            &.page-zoom-exit &__inner {
               opacity: 1;
-              transition: opacity 400ms ease-in-out;
+
+              //TODO:Have to change animation time
+              transition: opacity 4000ms;
             }
-            &.page-exit-active &__inner {
+
+            &.page-zoom-exit-active &__inner {
               opacity: 0;
             }
           }
@@ -106,18 +134,18 @@ const PageWrapper = ({ children, isServer, position }) => {
               box-shadow: ${getShadow(position)};
               opacity: 1;
               border-radius: 0;
-              z-index: 1;
+              z-index: 12;
             }
             10% {
-              z-index: 1;
+              z-index: 12;
               opacity: 1;
               height: 50%;
               width: 50%;
-              border-radius: 0 5px 5px 0;
             }
             75% {
               box-shadow: ${getShadow(position)};
 
+              border-radius: 0 5px 5px 0;
               z-index: 23;
             }
             100% {
@@ -136,25 +164,75 @@ const PageWrapper = ({ children, isServer, position }) => {
               width: 100%;
               opacity: 1;
               border-radius: 0 5px 5px 0;
-              box-shadow: 0;
-            }
-            25% {
+              z-index: 12;
               box-shadow: ${getShadow(position)};
             }
 
             85% {
+              z-index: 12;
               height: 50%;
               width: 50%;
               opacity: 1;
+              box-shadow: 0;
               border-radius: 0;
             }
 
             100% {
               height: 50%;
               width: 50%;
+              opacity: 0;
+
+              box-shadow: 0;
+              border-radius: 0;
+            }
+          }
+
+          @keyframes scaleIn {
+            0% {
               box-shadow: ${getShadow(position)};
+              height: 100%;
+              width: 100%;
+              border-radius: 0;
+              opacity: 0;
+              visibility: hidden;
+              top: 101%;
+              transform: scale(0.8);
+              bottom: auto;
+            }
+
+            5% {
+              opacity: 1;
+              visibility: visible;
+              top: 101%;
+              transform: scale(0.8);
+            }
+
+            65% {
+              box-shadow: none;
+              border-radius: 0 5px 5px 0;
+              transform: scale(0.8);
+            }
+            85% {
+              top: 0;
+              z-index: 2223;
+              transform: scale(1);
+            }
+          }
+
+          @keyframes scaleOut {
+            0% {
+              border-radius: 0 5px 5px 0;
+              transform: scale(1);
+              z-index: 12;
+            }
+            95% {
+              z-index: 12;
+            }
+            100% {
               opacity: 0;
               border-radius: 0;
+              z-index: 2;
+              transform: scale(0);
             }
           }
         `}
